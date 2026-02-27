@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheat - Jalan Tikus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bsi-teal: #00a19d;
+            --bsi-orange: #f39200;
+            --dark-bg: #121212;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --primary: #3498db;
+        }
+
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body { 
+            background: #eef2f3;
+            background-image: radial-gradient(circle at 50% 50%, #ffffff 0%, #d1d9d9 100%);
+            display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh; margin: 0; padding: 20px;
+        }
+
+        .card { 
+            width: 100%; max-width: 550px; 
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 28px; 
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); 
+            padding: 35px; 
+            border: 1px solid rgba(255,255,255,0.4);
+            position: relative; overflow: hidden;
+        }
+
+        .card::after {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; height: 6px;
+            background: linear-gradient(90deg, var(--bsi-teal), var(--bsi-orange));
+        }
+
+        .header { text-align: center; margin-bottom: 25px; }
+        h2 { margin: 0; color: #2c3e50; font-weight: 800; font-size: 24px; letter-spacing: -0.5px; }
+        .subtitle { color: #7f8c8d; font-size: 13px; margin-top: 5px; font-weight: 500; }
+
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+
+        .status-box { 
+            background: white; border: 1px solid #edf2f7; padding: 18px; border-radius: 20px; 
+            text-align: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .status-label { font-size: 10px; text-transform: uppercase; color: #a0aec0; font-weight: 800; margin-bottom: 6px; letter-spacing: 0.5px; }
+        .status-value { font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+        .pulse { width: 10px; height: 10px; border-radius: 50%; background: var(--danger); transition: 0.3s; }
+        .running .pulse { background: var(--success); animation: pulse-animation 1.5s infinite; }
+
+        @keyframes pulse-animation {
+            0% { box-shadow: 0 0 0 0px rgba(39, 174, 96, 0.4); }
+            100% { box-shadow: 0 0 0 12px rgba(39, 174, 96, 0); }
+        }
+
+        .control-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
+        
+        button { 
+            padding: 15px; border: none; border-radius: 15px; 
+            cursor: pointer; font-weight: 700; font-size: 13px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            display: flex; align-items: center; justify-content: center; gap: 8px; color: white;
+        }
+
+        .btn-start { background: var(--success); box-shadow: 0 4px 14px rgba(39, 174, 96, 0.3); }
+        .btn-manual { background: var(--primary); box-shadow: 0 4px 14px rgba(52, 152, 219, 0.3); }
+        .btn-stop { background: var(--danger); grid-column: span 2; box-shadow: 0 4px 14px rgba(231, 76, 60, 0.3); }
+
+        button:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
+        button:disabled { background: #cbd5e0; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        .log-container { background: var(--dark-bg); border-radius: 20px; overflow: hidden; box-shadow: inset 0 2px 15px rgba(0,0,0,0.3); }
+        .log-header { background: #1e1e1e; color: #636e72; padding: 12px 20px; font-size: 10px; font-weight: 800; display: flex; justify-content: space-between; border-bottom: 1px solid #2d3436; }
+        .log-body { height: 200px; overflow-y: auto; padding: 18px; color: #00ffcc; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.7; scroll-behavior: smooth; }
+
+        #realTimeClock { color: var(--bsi-orange); }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="mainCard">
+        <div class="header">
+            <h2>BSI FEST 2026</h2>
+            <div class="subtitle">Jalan Tikus Kita Bersama • Hu Ha</div>
+        </div>
+
+        <div class="info-grid">
+            <div class="status-box">
+                <div class="status-label">Engine Status</div>
+                <div class="status-value">
+                    <span class="pulse"></span> <span id="statusText" style="color:var(--danger)">OFFLINE</span>
+                </div>
+            </div>
+            <div class="status-box">
+                <div class="status-label">Next Execution</div>
+                <div class="status-value" id="countdownText" style="color: var(--bsi-teal);">--:--</div>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <button id="btnStart" class="btn-start">▶ START AUTO</button>
+            <button id="btnManual" class="btn-manual">✚ MANUAL INPUT</button>
+            <button id="btnStop" class="btn-stop" disabled>■ STOP ENGINE</button>
+        </div>
+
+        <div class="log-container">
+            <div class="log-header">
+                <span>ACTIVITY MONITOR</span>
+                <span id="realTimeClock">00:00:00</span>
+            </div>
+            <div id="logBox" class="log-body">
+                <div>[SYSTEM] Jalan Tikus initialized. Ready to sync.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIGURATION
+        // ==========================================
+        const apiUrl = 'https://script.google.com/macros/s/AKfycbzMYFD8jahEVLOktUxUh_6NbFzndyd7YHqKTPsBiPZ_f_62Tb8kV-DSKqY9hwgnS1X2KA/exec';
+        const formUrl = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSfARz3k2fBImp4DrEIcWu4QrcvFRFoxOEu2129lYaGF5K01rw/formResponse';
+
+        const listPromo = ["Cicil Emas", "Tab Haji", "Gadai Emas", "BSI Oto", "Griya", "Mitraguna", "Tabungan Emas", "Deposito", "BYOND"];
+        const listProduk = ["Cicil Emas", "Tab Haji", "Gadai Emas", "BSI Oto", "Griya", "Mitraguna", "Tabungan Emas", "Deposito", "Reksadana", "Sukuk Berharga"];
+
+        let timerValue = 300; 
+        let countdownInterval;
+        let isProcessing = false; 
+
+        // Elements
+        const btnStart = document.getElementById('btnStart');
+        const btnManual = document.getElementById('btnManual');
+        const btnStop = document.getElementById('btnStop');
+        const statusText = document.getElementById('statusText');
+        const logBox = document.getElementById('logBox');
+        const countdownText = document.getElementById('countdownText');
+        const mainCard = document.getElementById('mainCard');
+
+        // ==========================================
+        // LOGIC FUNCTIONS
+        // ==========================================
+
+        function addLog(msg) {
+            const time = new Date().toLocaleTimeString('id-ID');
+            logBox.innerHTML += `<div><span style="color:#636e72">[${time}]</span> ${msg}</div>`;
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function getRandom(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        async function prosesOtomasi(isManual = false) {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            addLog(isManual ? "<span style='color:#3498db'>[MANUAL]</span> Checking data..." : "<span style='color:#f39200'>[AUTO]</span> Fetching next row...");
+
+            try {
+                // Fetch direct from Apps Script (No Cache)
+                const response = await fetch(`${apiUrl}?t=${Date.now()}`);
+                const resJson = await response.json();
+
+                if (resJson.status === "empty") {
+                    addLog("<span style='color:#e74c3c'>[INFO]</span> Spreadsheet is empty.");
+                    isProcessing = false;
+                    if (!isManual) stopScript();
+                    return;
+                }
+
+                addLog(`Processing: <b>${resJson.nama}</b>...`);
+
+                let promo = getRandom(listPromo);
+                let produk = getRandom(listProduk);
+                while (produk === promo) { produk = getRandom(listProduk); }
+
+                // 1. Submit Google Form
+                const payload = new URLSearchParams();
+                payload.append('entry.262853679', resJson.nama);
+                payload.append('entry.1966912910', resJson.wa);
+                payload.append('entry.1500659051', resJson.cabang.toUpperCase());
+                payload.append('entry.1727869846', promo);
+                payload.append('entry.161088095', produk);
+                payload.append('entry.1446262211', "Bersedia");
+                payload.append('entry.665311139', resJson.domisili);
+
+                await fetch(formUrl, { method: 'POST', mode: 'no-cors', body: payload });
+
+                // 2. Delete row from Sheet
+                await fetch(`${apiUrl}?nama=${encodeURIComponent(resJson.nama)}`, {
+                    method: 'POST',
+                    mode: 'no-cors'
+                });
+
+                addLog(`<span style='color:#27ae60'>[SUCCESS]</span> <b>${resJson.nama}</b> submitted & removed.`);
+                if (isManual) timerValue = 300; 
+
+            } catch (e) {
+                addLog("<span style='color:#e74c3c'>[ERROR]</span> Connection failed.");
+            } finally {
+                isProcessing = false;
+            }
+        }
+
+        // ==========================================
+        // UI CONTROLS
+        // ==========================================
+
+        btnStart.onclick = () => {
+            btnStart.disabled = true;
+            btnStop.disabled = false;
+            mainCard.classList.add('running');
+            statusText.innerText = "RUNNING";
+            statusText.style.color = "var(--success)";
+            
+            addLog("Automation engine started (5 Min interval).");
+            prosesOtomasi();
+            
+            countdownInterval = setInterval(() => {
+                timerValue--;
+                let m = Math.floor(timerValue / 60);
+                let s = timerValue % 60;
+                countdownText.innerText = `${m}m ${s < 10 ? '0'+s : s}s`;
+                
+                if (timerValue <= 0) {
+                    prosesOtomasi();
+                    timerValue = 300;
+                }
+            }, 1000);
+        };
+
+        btnManual.onclick = () => prosesOtomasi(true);
+
+        btnStop.onclick = stopScript;
+
+        function stopScript() {
+            btnStart.disabled = false;
+            btnStop.disabled = true;
+            mainCard.classList.remove('running');
+            statusText.innerText = "OFFLINE";
+            statusText.style.color = "var(--danger)";
+            clearInterval(countdownInterval);
+            countdownText.innerText = "--:--";
+            addLog("Automation engine stopped.");
+        }
+
+        // Clock Update
+        setInterval(() => {
+            document.getElementById('realTimeClock').innerText = new Date().toLocaleTimeString('id-ID');
+        }, 1000);
+    </script>
+</body>
+</html>
