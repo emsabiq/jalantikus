@@ -7,7 +7,7 @@ const formUrl = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSfARz3k2fBImp4DrEI
 const listPromo = ["Cicil Emas", "Tab Haji", "Gadai Emas", "BSI Oto", "Griya", "Mitraguna", "Tabungan Emas", "Deposito", "BYOND"];
 const listProduk = ["Cicil Emas", "Tab Haji", "Gadai Emas", "BSI Oto", "Griya", "Mitraguna", "Tabungan Emas", "Deposito", "Reksadana", "Sukuk Berharga"];
 
-let timerValue = 300; 
+let timerValue = 60; 
 let countdownInterval;
 let isProcessing = false; 
 
@@ -116,4 +116,5 @@ function stopScript() {
     clearInterval(countdownInterval);
     countdownText.innerText = "--:--";
     addLog("Otomasi dihentikan.");
+
 }
