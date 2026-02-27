@@ -138,6 +138,7 @@
     let timerValue = 60; 
     let countdownInterval;
     let isProcessing = false; 
+    let successCount = 0;
 
     // Elements
     const btnStart = document.getElementById('btnStart');
@@ -154,6 +155,10 @@
 
     function addLog(msg) {
         const time = new Date().toLocaleTimeString('id-ID');
+        // Auto-clean log jika sudah terlalu banyak (mencegah lag browser)
+        if (logBox.children.length > 100) {
+            logBox.innerHTML = '<div>[SYSTEM] Log cleared for performance...</div>';
+        }
         logBox.innerHTML += `<div><span style="color:#636e72">[${time}]</span> ${msg}</div>`;
         logBox.scrollTop = logBox.scrollHeight;
     }
@@ -204,9 +209,10 @@
                 mode: 'no-cors'
             });
 
-            addLog(`<span style='color:#27ae60'>[SUCCESS]</span> <b>${resJson.nama}</b> submitted & removed.`);
+            successCount++;
+            addLog(`<span style='color:#27ae60'>[SUCCESS]</span> <b>${resJson.nama}</b> submitted. Total: ${successCount}`);
             
-            // Timer reset ke 60 setelah aksi berhasil (Manual/Otomatis)
+            // Timer reset ke 60 setelah aksi berhasil
             timerValue = 60; 
 
         } catch (e) {
@@ -227,7 +233,6 @@
         statusText.innerText = "RUNNING";
         statusText.style.color = "var(--success)";
         
-        // Update Log Info ke 1 Menit
         addLog("Automation engine started (1 Min interval).");
         prosesOtomasi();
         
@@ -268,5 +273,3 @@
 </script>
 </body>
 </html>
-
-
